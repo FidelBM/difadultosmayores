@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Recomendación de Actividades</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        text-align: center;
+        margin: 0;
+        padding: 0;
+        background-image: url("https://res.cloudinary.com/dfpd4ucjw/image/upload/v1741757773/oknrn4ahrpss7r38bwr9.png");
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+      }
+      .container {
+        max-width: 600px;
+        background: rgba(255, 255, 255, 0.9);
+        padding: 20px;
+        border-radius: 15px;
+        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+      }
+      .question,
+      .result {
+        margin-bottom: 20px;
+        display: none;
+      }
+      .button {
+        padding: 10px 20px;
+        margin: 5px;
+        border: none;
+        cursor: pointer;
+        background-color: #a02b93;
+        color: white;
+        border-radius: 5px;
+      }
+      .button:hover {
+        background-color: #8c2483;
+      }
+      .input-field {
+        padding: 10px;
+        width: 80%;
+        margin-bottom: 10px;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+      }
+      table,
+      th,
+      td {
+        border: 1px solid black;
+      }
+      th,
+      td {
+        padding: 8px;
+        text-align: center;
+      }
+
+      @media only screen and (max-width: 768px) {
+        body {
+          background-image: url("https://res.cloudinary.com/dfpd4ucjw/image/upload/v1741757374/h4iov0waptbczugazw21.png");
+          font-size: small;
+        }
+        .container {
+          margin: 15px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h2>Responde estas preguntas para obtener una recomendación</h2>
+      <div id="nameInput">
+        <p>Por favor, ingresa tu nombre:</p>
+        <input
+          type="text"
+          id="socioName"
+          class="input-field"
+          placeholder="Escribe tu nombre aquí"
+        />
+        <button class="button" onclick="startQuestions()">Comenzar</button>
+      </div>
+      <div id="questions" style="display: none">
+        <div class="question" id="q1">
+          <p>¿Cómo te sientes hoy?</p>
+          <button class="button" onclick="nextQuestion(2)">Bien</button>
+          <button class="button" onclick="nextQuestion(2)">Cansado</button>
+          <button class="button" onclick="nextQuestion(2)">Estresado</button>
+        </div>
+        <div class="question" id="q2">
+          <p>¿Cuánto tiempo libre tienes?</p>
+          <button class="button" onclick="nextQuestion(3)">Poco</button>
+          <button class="button" onclick="nextQuestion(3)">Moderado</button>
+          <button class="button" onclick="nextQuestion(3)">Mucho</button>
+        </div>
+        <div class="question" id="q3">
+          <p>¿Te gustaría aprender algo nuevo?</p>
+          <button class="button" onclick="showResult('Aprendizaje')">Sí</button>
+          <button class="button" onclick="showResult('Relajación')">No</button>
+        </div>
+      </div>
+      <div id="result" class="result">
+        <h3>Tu recomendación:</h3>
+        <p id="activity"></p>
+        <table id="activityScheduleTable" style="display: none">
+          <thead>
+            <tr>
+              <th>Actividad</th>
+              <th>Horario</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+        <button class="button" onclick="downloadDatabase()">
+          Descargar Base de Datos
+        </button>
+        <button class="button" onclick="restart()">
+          Registrar Otro Usuario
+        </button>
+      </div>
+    </div>
+    <script>
+      const activities = {
+        Aprendizaje: [
+          {
+            activity: "Computación",
+            schedule: "Lunes a Viernes, 10:00 AM - 12:00 PM",
+          },
+          {
+            activity: "Guitarra",
+            schedule: "Lunes y Miércoles, 3:00 PM - 4:00 PM",
+          },
+          { activity: "Cuento", schedule: "Martes, 1:00 PM - 2:00 PM" },
+          { activity: "Psicología", schedule: "Jueves, 11:00 AM - 1:00 PM" },
+        ],
+        Relajación: [
+          {
+            activity: "Yoga",
+            schedule: "Lunes, Miércoles y Viernes, 8:00 AM - 9:00 AM",
+          },
+          {
+            activity: "Terapia Física",
+            schedule: "Martes y Jueves, 4:00 PM - 5:00 PM",
+          },
+          {
+            activity: "Reflexología",
+            schedule: "Miércoles, 10:00 AM - 12:00 PM",
+          },
+          {
+            activity: "Activación Física",
+            schedule: "Sábado, 9:00 AM - 10:00 AM",
+          },
+        ],
+        Arte: [
+          {
+            activity: "Manualidades",
+            schedule: "Lunes y Jueves, 4:00 PM - 5:00 PM",
+          },
+          {
+            activity: "Pintura Textil",
+            schedule: "Martes y Viernes, 2:00 PM - 3:00 PM",
+          },
+          { activity: "Bordado", schedule: "Miércoles, 3:00 PM - 5:00 PM" },
+          { activity: "Tejido", schedule: "Sábado, 11:00 AM - 1:00 PM" },
+        ],
+        Baile: [
+          {
+            activity: "Zumba",
+            schedule: "Lunes y Miércoles, 6:00 PM - 7:00 PM",
+          },
+          {
+            activity: "Baile de Salón",
+            schedule: "Martes y Jueves, 7:00 PM - 8:00 PM",
+          },
+          {
+            activity: "Aerobics Dance",
+            schedule: "Viernes, 5:00 PM - 6:00 PM",
+          },
+          { activity: "Danzón", schedule: "Sábado, 5:00 PM - 7:00 PM" },
+        ],
+        Gastronomía: [
+          {
+            activity: "Panadería",
+            schedule: "Lunes y Miércoles, 10:00 AM - 1:00 PM",
+          },
+          {
+            activity: "Cocina Saludable",
+            schedule: "Martes y Jueves, 3:00 PM - 5:00 PM",
+          },
+          { activity: "Nutrición", schedule: "Viernes, 1:00 PM - 3:00 PM" },
+        ],
+        Deporte: [
+          {
+            activity: "Natación",
+            schedule: "Lunes, Miércoles y Viernes, 8:00 AM - 9:00 AM",
+          },
+          {
+            activity: "Caminatas",
+            schedule: "Martes y Jueves, 7:00 AM - 8:00 AM",
+          },
+          {
+            activity: "Ejercicio Funcional",
+            schedule: "Sábado, 10:00 AM - 11:00 AM",
+          },
+        ],
+      };
+
+      let userData = JSON.parse(localStorage.getItem("userDatabase")) || [];
+
+      function startQuestions() {
+        let name = document.getElementById("socioName").value.trim();
+        if (name === "") {
+          alert("Por favor, ingresa tu nombre para continuar.");
+          return;
+        }
+        document.getElementById("nameInput").style.display = "none";
+        document.getElementById("questions").style.display = "block";
+        document.getElementById("q1").style.display = "block";
+      }
+
+      function nextQuestion(num) {
+        document
+          .querySelectorAll(".question")
+          .forEach((q) => (q.style.display = "none"));
+        document.getElementById("q" + num).style.display = "block";
+      }
+
+      function showResult(activityType) {
+        let name = document.getElementById("socioName").value;
+        let recommendedActivities = activities[activityType];
+
+        // Seleccionar aleatoriamente 3 actividades
+        let randomActivities = [];
+        while (randomActivities.length < 3) {
+          let randomActivity =
+            recommendedActivities[
+              Math.floor(Math.random() * recommendedActivities.length)
+            ];
+          if (!randomActivities.includes(randomActivity)) {
+            randomActivities.push(randomActivity);
+          }
+        }
+
+        document.getElementById(
+          "activity"
+        ).innerText = `${name}, recomendamos las siguientes actividades:`;
+
+        let tableBody = document.querySelector("#activityScheduleTable tbody");
+        tableBody.innerHTML = ""; // Limpiar tabla previa
+
+        // Mostrar las actividades recomendadas en la tabla
+        randomActivities.forEach((activity) => {
+          let row = tableBody.insertRow();
+          let cell1 = row.insertCell(0);
+          let cell2 = row.insertCell(1);
+          cell1.textContent = activity.activity;
+          cell2.textContent = activity.schedule;
+        });
+
+        document.getElementById("activityScheduleTable").style.display =
+          "table";
+
+        // Guardar datos del usuario
+        randomActivities.forEach((activity) => {
+          userData.push({
+            Nombre: name,
+            Actividades: `${activity.activity} - ${activity.schedule}`,
+          });
+        });
+        localStorage.setItem("userDatabase", JSON.stringify(userData));
+        document.getElementById("questions").style.display = "none";
+        document.getElementById("result").style.display = "block";
+      }
+
+      function downloadDatabase() {
+        let csvContent =
+          "Nombre,Actividades\n" +
+          userData.map((u) => `${u.Nombre},${u.Actividades}`).join("\n");
+        let blob = new Blob([csvContent], { type: "text/csv" });
+        let link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = "Base_Datos_Usuarios.csv";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+
+      function restart() {
+        document.getElementById("result").style.display = "none";
+        document.getElementById("nameInput").style.display = "block";
+        document.getElementById("socioName").value = "";
+        document.getElementById("questions").style.display = "none";
+        document
+          .querySelectorAll(".question")
+          .forEach((q) => (q.style.display = "none"));
+      }
+    </script>
+  </body>
+</html>
